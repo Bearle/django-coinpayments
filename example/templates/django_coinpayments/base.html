@@ -1,5 +1,5 @@
 {% load staticfiles i18n %}<!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -14,10 +14,10 @@
   <![endif]-->
 
   {% block css %}
-  <!-- Latest compiled and minified CSS -->
-  <link rel="stylesheet" href="https://cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/css/bootstrap.css">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/css/bootstrap.css">
 
-  <!-- Your stuff: Third-party css libraries go here -->
+    <!-- Your stuff: Third-party css libraries go here -->
 
   {% endblock %}
 </head>
@@ -48,19 +48,23 @@
 <div class="container">
 
   {% if messages %}
-  {% for message in messages %}
-  <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</div>
-  {% endfor %}
+    {% for message in messages %}
+      <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</div>
+    {% endfor %}
   {% endif %}
+  <div class="row" style="margin-bottom: 20px">
 
-  {% block content %}
-  <div class="row m-t-2">
-    <p>Use this document as a way to quick start any new project.</p>
-    <p>The current template is loaded from
-      <code>django-coinpayments/example/templates/base.html</code>. </p>
-    <p>Whenever you overwrite the contents of <code>django-coinpayments/django_coinpayments/urls.py</code> with your
-      own content, you should see it here.</p>
+    <a class="btn btn-primary" href="/" style="margin-right: 20px">Home</a>
+    <a class="btn btn-primary" href="{% url 'payment_list' %}">Payments list</a>
   </div>
+  {% block content %}
+    <div class="row m-t-2">
+      <p>Use this document as a way to quick start any new project.</p>
+      <p>The current template is loaded from
+        <code>django-coinpayments/example/templates/base.html</code>. </p>
+      <p>Whenever you overwrite the contents of <code>django-coinpayments/django_coinpayments/urls.py</code> with your
+        own content, you should see it here.</p>
+    </div>
   {% endblock content %}
 
 </div> <!-- /container -->
@@ -71,16 +75,16 @@
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
 {% block javascript %}
-<!-- Latest JQuery -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+  <!-- Latest JQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 
-<!-- Tether - a requirement for Bootstrap tooltips -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js"></script>
+  <!-- Tether - a requirement for Bootstrap tooltips -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js"></script>
 
-<!-- Latest compiled and minified JavaScript -->
-<script src="https://cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/js/bootstrap.js"></script>
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/js/bootstrap.js"></script>
 
-<!-- Your stuff: Third-party javascript libraries go here -->
+  <!-- Your stuff: Third-party javascript libraries go here -->
 
 {% endblock javascript %}
 </body>

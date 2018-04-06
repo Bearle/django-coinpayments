@@ -1,0 +1,26 @@
+{% extends 'django_coinpayments/base.html' %}
+{% block content %}
+  {% if error %}
+    <div class="alert alert-danger" role="alert">
+      An error occured: {{ error }}
+    </div>
+  {% else %}
+    Payment created successfully.
+    Payment amount: {{ object.amount.normalize }} {{ object.get_currency_original_display }}
+    <h4>CoinPayments.net Transaction <strong>{{ object.provider_tx.id }}</strong></h4>
+    <p>
+      Send {{ object.provider_tx.amount.normalize }}
+      {{ object.get_currency_paid_display }}
+      to {{ object.provider_tx.address }}
+    </p>
+    <p>Time left to pay:<br><span class="countdown"
+                                  data-date="{{ object.provider_tx.timeout|date:"SHORT_DATE_FORMAT" }} {{ object.provider_tx.timeout|time:"H:i" }}"
+                                  data-date-fallback="Timeout exceed"></span></p>
+    <img src="{{ object.provider_tx.qrcode_url }}"><br>
+    <a class="btn btn-primary" href="{{ object.provider_tx.status_url }}" target="_blank">
+                <span class="btn__text">
+                  View status
+                </span>
+    </a>
+  {% endif %}
+{% endblock content %}

@@ -1,0 +1,17 @@
+{% extends 'django_coinpayments/base.html' %}
+{% block content %}
+  <ul>
+
+
+    {% for obj in object_list %}
+      <li>
+        Payment #{{ obj.id }}, {{ obj.amount_paid.normalize }} {{ obj.get_currency_paid_display }}
+        of {{ obj.amount.normalize }} {{ obj.get_currency_paid_display }} paid. <br>
+        Status: {{ obj.get_status_display }}
+        <br>
+        <a class="btn btn-primary" href="{% url 'payment_new' obj.pk %}">Create a new transaction</a>
+        <a class="btn btn-primary" href="{% url 'payment_detail' obj.pk %}">View transaction details</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock content %}

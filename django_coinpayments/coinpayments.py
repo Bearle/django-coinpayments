@@ -21,7 +21,8 @@ class CoinPayments():
         Checks Django settings for api keys & IPN url and
         returns and initialized instance of `CoinPayments`
         """
-        if not getattr(settings, 'COINPAYMENTS_API_KEY') or not getattr(settings, 'COINPAYMENTS_API_SECRET'):
+        if not getattr(settings, 'COINPAYMENTS_API_KEY', None) or \
+            not getattr(settings, 'COINPAYMENTS_API_SECRET', None):
             raise ImproperlyConfigured('COINPAYMENTS_API_KEY and COINPAYMENTS_API_SECRET are required!')
         ipn_url = getattr(settings, 'COINPAYMENTS_IPN_URL', None)
         return CoinPayments(settings.COINPAYMENTS_API_KEY, settings.COINPAYMENTS_API_SECRET, ipn_url=ipn_url)
