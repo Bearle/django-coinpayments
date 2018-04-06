@@ -42,13 +42,12 @@ INSTALLED_APPS = [
     # they should be added here
 ]
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -118,3 +117,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+COINPAYMENTS_ADMIN_ENABLED = True
+# Insert your API keys here
+# COINPAYMENTS_API_KEY = ''
+# COINPAYMENTS_API_SECRET = ''
+
+# has EOS - overrides choices for 'currency_original' and 'currency_paid' in Payment model
+COINPAYMENTS_ACCEPTED_COINS = (
+('BCH', 'Bitcoin Cash'), ('BLK', 'BlackCoin'), ('BTC', 'Bitcoin'), ('DASH', 'Dash'), ('DCR', 'Decred'),
+('DGB', 'DigiByte'), ('DOGE', 'Dogecoin'), ('ETC', 'Ether Classic'), ('ETH', 'Ether'), ('EOS', 'EOS'),
+('EXP', 'Expanse'), ('GAME', 'GameCredits'), ('LSK', 'LISK'), ('LTC', 'Litecoin'), ('MAID', 'MaidSafeCoin'),
+('NAV', 'NAV Coin'), ('NEO', 'NEO'), ('POT', 'PotCoin'), ('SBD', 'Steem Dollars'), ('STEEM', 'STEEM'),
+('STRAT', 'Stratis'), ('VTC', 'Vertcoin'), ('XEM', 'NEM'), ('XMR', 'Monero'), ('XRP', 'Ripple'), ('XVG', 'VERGE'))

@@ -96,7 +96,7 @@ class Payment(TimeStampedModel):
         verbose_name_plural = _('Payments')
 
     def __str__(self):
-        return "%s of %s - %s".format(str(self.amount), str(self.amount_paid), self.get_status_display())
+        return "{} of {} - {}".format(str(self.amount_paid.normalize()), str(self.amount.normalize()), self.get_status_display())
 
     def is_paid(self):
         return self.status == self.PAYMENT_STATUS_PAID
