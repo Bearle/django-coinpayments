@@ -1,0 +1,2 @@
+class CoinPaymentsProviderError(Exception):
+    pass
