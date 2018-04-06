@@ -10,19 +10,24 @@ from .exceptions import CoinPaymentsProviderError
 from .utils import get_coins_list
 import datetime
 from decimal import Decimal
+from django.utils.translation import ugettext_lazy as _
 
 
 class CoinPaymentsTransaction(TimeStampedModel):
-    id = models.CharField(max_length=100, verbose_name='id', primary_key=True, editable=False)
-    address = models.CharField(max_length=150, verbose_name='Address')
-    amount = models.DecimalField(max_digits=100, decimal_places=18, verbose_name='Amount')
-    confirms_needed = models.PositiveSmallIntegerField(verbose_name='Confirms needed')
-    qrcode_url = models.URLField(verbose_name='QR Code Url')
-    status_url = models.URLField(verbose_name='Status Url')
-    timeout = models.DateTimeField(verbose_name='Valid until')
+    id = models.CharField(max_length=100, verbose_name=_('id'), primary_key=True, editable=False)
+    address = models.CharField(max_length=150, verbose_name=_('Address'))
+    amount = models.DecimalField(max_digits=100, decimal_places=18, verbose_name=_('Amount'))
+    confirms_needed = models.PositiveSmallIntegerField(verbose_name=_('Confirms needed'))
+    qrcode_url = models.URLField(verbose_name=_('QR Code Url'))
+    status_url = models.URLField(verbose_name=_('Status Url'))
+    timeout = models.DateTimeField(verbose_name=_('Valid until'))
 
     def __str__(self):
         return self.id
+
+    class Meta:
+        verbose_name = _('CoinPayments Transaction')
+        verbose_name_plural = _('CoinPayments Transactions')
 
 
 class PaymentManager(models.Manager):
@@ -51,6 +56,11 @@ class PaymentManager(models.Manager):
         """
         return self.get_late_payments().update(status=self.model.PAYMENT_STATUS_TIMEOUT)
 
+    def get_pending_payments(self):
+        return self.get_queryset() \
+            .filter(status__in=[self.model.PAYMENT_STATUS_PENDING]) \
+            .exclude(self.get_late_payments())
+
     def get_successful_payments(self):
         """
         Returns successfully paid payments
@@ -65,28 +75,28 @@ class Payment(TimeStampedModel):
     PAYMENT_STATUS_PROVIDER_PENDING = 'PRPE'
     PAYMENT_STATUS_CANCELLED = 'CNCL'
     PAYMENT_STATUS_CHOICES = (
-        (PAYMENT_STATUS_PROVIDER_PENDING, 'Provider-related payment pending'),
-        (PAYMENT_STATUS_PENDING, 'Pending'),
-        (PAYMENT_STATUS_CANCELLED, 'Cancelled'),
-        (PAYMENT_STATUS_TIMEOUT, 'Timed out'),
-        (PAYMENT_STATUS_PAID, 'Paid')
+        (PAYMENT_STATUS_PROVIDER_PENDING, _('Provider-related payment pending')),
+        (PAYMENT_STATUS_PENDING, _('Pending')),
+        (PAYMENT_STATUS_CANCELLED, _('Cancelled')),
+        (PAYMENT_STATUS_TIMEOUT, _('Timed out')),
+        (PAYMENT_STATUS_PAID, _('Paid'))
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    currency_original = models.CharField(max_length=8, choices=get_coins_list())
-    currency_paid = models.CharField(max_length=8, choices=get_coins_list())
-    amount = models.DecimalField(max_digits=100, decimal_places=18, verbose_name='Amount')
-    amount_paid = models.DecimalField(max_digits=100, decimal_places=18, verbose_name='Amount paid')
+    currency_original = models.CharField(max_length=8, choices=get_coins_list(), verbose_name=_('Original currency'))
+    currency_paid = models.CharField(max_length=8, choices=get_coins_list(), verbose_name=_('Payment currency'))
+    amount = models.DecimalField(max_digits=100, decimal_places=18, verbose_name=_('Amount'))
+    amount_paid = models.DecimalField(max_digits=100, decimal_places=18, verbose_name=_('Amount paid'))
     provider_tx = models.OneToOneField(CoinPaymentsTransaction, on_delete=models.CASCADE,
-                                       verbose_name='Payment transaction', null=True, blank=True)
+                                       verbose_name=_('Payment transaction'), null=True, blank=True)
     status = models.CharField(max_length=4, choices=PAYMENT_STATUS_CHOICES)
     objects = PaymentManager()
 
     class Meta:
-        verbose_name = 'Payment'
-        verbose_name_plural = 'Payments'
+        verbose_name = _('Payment')
+        verbose_name_plural = _('Payments')
 
     def __str__(self):
-        return f'{self.amount} of {self.amount_paid} - {self.get_status_display()}'
+        return "%s of %s - %s".format(str(self.amount), str(self.amount_paid), self.get_status_display())
 
     def is_paid(self):
         return self.status == self.PAYMENT_STATUS_PAID
@@ -125,10 +135,12 @@ class Payment(TimeStampedModel):
         if result['error'] == 'ok':
             result = result['result']
             timeout = timezone.now() + datetime.timedelta(seconds=result['timeout'])
-            c = CoinPaymentsTransaction.objects.create(id=result['txn_id'], amount=Decimal(result['amount']),
+            c = CoinPaymentsTransaction.objects.create(id=result['txn_id'],
+                                                       amount=Decimal(result['amount']),
                                                        address=result['address'],
                                                        confirms_needed=int(result['confirms_needed']),
-                                                       qrcode_url=result['qrcode_url'], status_url=result['status_url'],
+                                                       qrcode_url=result['qrcode_url'],
+                                                       status_url=result['status_url'],
                                                        timeout=timeout)
             self.provider_tx = c
             self.save()

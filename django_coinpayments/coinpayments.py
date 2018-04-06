@@ -33,9 +33,8 @@ class CoinPayments():
         the hmac on both sides depends upon the order of the parameters, any
         change in the order and the hmacs wouldn't match
         """
-        encoded = bytes(urllib.parse.urlencode(params).encode('ascii'))
-        private_key_b = bytes(self.privateKey.encode('ascii'))
-        return encoded, hmac.new(private_key_b, encoded, hashlib.sha512).hexdigest()
+        encoded = urllib.parse.urlencode(params).encode('utf-8')
+        return encoded, hmac.new(bytearray(self.privateKey, 'utf-8'), encoded, hashlib.sha512).hexdigest()
 
     def request(self, request_method, **params):
         """
