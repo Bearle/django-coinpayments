@@ -38,7 +38,7 @@ Add it to your `INSTALLED_APPS`:
 
 **Important!**
 
-You have to provide API keys with `create_transaction`, `get_tx_info`, `rates` permissions like this in your settings.py:
+You have to provide API keys with `create_transaction`, `get_tx_info` permissions like this in your settings.py:
 
 .. code-block:: python
 
@@ -48,7 +48,11 @@ You have to provide API keys with `create_transaction`, `get_tx_info`, `rates` p
 Features
 --------
 
-* TODO
+* Has full Coinpayments API client based on .. _`This one`: https://github.com/DogFive/pyCoinPayments
+* Has celery, cron tasks for transaction status updates
+* Provides a simple `create_tx` method
+* Multiple accepted coins can be set using COINPAYMENTS_ACCEPTED_COINS variable in settings.py
+
 
 Running Tests
 -------------

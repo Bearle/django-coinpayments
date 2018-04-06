@@ -4,40 +4,47 @@ import hashlib
 import json
 from django.conf import settings, ImproperlyConfigured
 
+
 class CoinPayments():
 
-    def __init__(self, publicKey, privateKey, ipn_url=None):
+    def __init__(self, public_key, private_key, ipn_url=None):
         self.url = 'https://www.coinpayments.net/api.php'
-        self.publicKey = publicKey
-        self.privateKey = privateKey
+        self.publicKey = public_key
+        self.privateKey = private_key
         self.ipn_url = ipn_url
         self.format = 'json'
         self.version = 1
 
     @classmethod
     def get_instance(cls):
+        """
+        Checks Django settings for api keys & IPN url and
+        returns and initialized instance of `CoinPayments`
+        """
         if not getattr(settings, 'COINPAYMENTS_API_KEY') or not getattr(settings, 'COINPAYMENTS_API_SECRET'):
             raise ImproperlyConfigured('COINPAYMENTS_API_KEY and COINPAYMENTS_API_SECRET are required!')
-        return CoinPayments(settings.COINPAYMENTS_API_KEY, settings.COINPAYMENTS_API_SECRET)
+        ipn_url = getattr(settings, 'COINPAYMENTS_IPN_URL', None)
+        return CoinPayments(settings.COINPAYMENTS_API_KEY, settings.COINPAYMENTS_API_SECRET, ipn_url=ipn_url)
 
-    def createHmac(self, **params):
-        """ Generate an HMAC based upon the url arguments/parameters
-
-            We generate the encoded url here and return it to Request because
-            the hmac on both sides depends upon the order of the parameters, any
-            change in the order and the hmacs wouldn't match
+    def create_hmac(self, **params):
+        """
+        Generate an HMAC based upon the url arguments/parameters
+        We generate the encoded url here and return it to request because
+        the hmac on both sides depends upon the order of the parameters, any
+        change in the order and the hmacs wouldn't match
         """
         encoded = bytes(urllib.parse.urlencode(params).encode('ascii'))
         private_key_b = bytes(self.privateKey.encode('ascii'))
         return encoded, hmac.new(private_key_b, encoded, hashlib.sha512).hexdigest()
 
-    def Request(self, request_method, **params):
-        """The basic request that all API calls use
-            the parameters are joined in the actual api methods so the parameter
-            strings can be passed and merged inside those methods instead of the
-            request method
+    def request(self, request_method, **params):
         """
-        encoded, sig = self.createHmac(**params)
+        The basic request that all API calls use
+        the parameters are joined in the actual api methods so the parameter
+        strings can be passed and merged inside those methods instead of the
+        request method
+        """
+        encoded, sig = self.create_hmac(**params)
 
         headers = {'hmac': sig}
 
@@ -55,9 +62,10 @@ class CoinPayments():
             response_body = e.read()
         return json.loads(response_body)
 
-    def createTransaction(self, params=None):
-        """ Creates a transaction to give to the purchaser
-            https://www.coinpayments.net/apidoc-create-transaction
+    def create_transaction(self, params=None):
+        """
+        Creates a transaction to give to the purchaser
+        https://www.coinpayments.net/apidoc-create-transaction
         """
         if params is None:
             params = {}
@@ -67,11 +75,12 @@ class CoinPayments():
                        'key': self.publicKey,
                        'version': self.version,
                        'format': self.format})
-        return self.Request('post', **params)
+        return self.request('post', **params)
 
-    def getBasicInfo(self, params=None):
-        """Gets merchant info based on API key (callee)
-           https://www.coinpayments.net/apidoc-get-basic-info
+    def get_basic_info(self, params=None):
+        """
+        Gets merchant info based on API key (callee)
+        https://www.coinpayments.net/apidoc-get-basic-info
         """
         if params is None:
             params = {}
@@ -79,11 +88,12 @@ class CoinPayments():
                        'key': self.publicKey,
                        'version': self.version,
                        'format': self.format})
-        return self.Request('post', **params)
+        return self.request('post', **params)
 
     def rates(self, params=None):
-        """Gets current rates for currencies
-           https://www.coinpayments.net/apidoc-rates
+        """
+        Gets current rates for currencies
+        https://www.coinpayments.net/apidoc-rates
         """
         if params is None:
             params = {}
@@ -91,11 +101,12 @@ class CoinPayments():
                        'key': self.publicKey,
                        'version': self.version,
                        'format': self.format})
-        return self.Request('post', **params)
+        return self.request('post', **params)
 
     def balances(self, params=None):
-        """Get current wallet balances
-            https://www.coinpayments.net/apidoc-balances
+        """
+        Get current wallet balances
+        https://www.coinpayments.net/apidoc-balances
         """
         if params is None:
             params = {}
@@ -103,11 +114,12 @@ class CoinPayments():
                        'key': self.publicKey,
                        'version': self.version,
                        'format': self.format})
-        return self.Request('post', **params)
+        return self.request('post', **params)
 
-    def getDepositAddress(self, params=None):
-        """Get address for personal deposit use
-           https://www.coinpayments.net/apidoc-get-deposit-address
+    def get_deposit_address(self, params=None):
+        """
+        Get address for personal deposit use
+        https://www.coinpayments.net/apidoc-get-deposit-address
         """
         if params is None:
             params = {}
@@ -115,11 +127,12 @@ class CoinPayments():
                        'key': self.publicKey,
                        'version': self.version,
                        'format': self.format})
-        return self.Request('post', **params)
+        return self.request('post', **params)
 
-    def getCallbackAddress(self, params=None):
-        """Get a callback address to recieve info about address status
-           https://www.coinpayments.net/apidoc-get-callback-address
+    def get_callback_address(self, params=None):
+        """
+        Get a callback address to recieve info about address status
+        https://www.coinpayments.net/apidoc-get-callback-address
         """
         if params is None:
             params = {}
@@ -129,13 +142,14 @@ class CoinPayments():
                        'key': self.publicKey,
                        'version': self.version,
                        'format': self.format})
-        return self.Request('post', **params)
+        return self.request('post', **params)
 
-    def createTransfer(self, params=None):
-        """Not really sure why this function exists to be honest, it transfers
-            coins from your addresses to another account on coinpayments using
-            merchant ID
-           https://www.coinpayments.net/apidoc-create-transfer
+    def create_transfer(self, params=None):
+        """
+        Not really sure why this function exists to be honest, it transfers
+        coins from your addresses to another account on coinpayments using
+        merchant ID
+        https://www.coinpayments.net/apidoc-create-transfer
         """
         if params is None:
             params = {}
@@ -143,12 +157,13 @@ class CoinPayments():
                        'key': self.publicKey,
                        'version': self.version,
                        'format': self.format})
-        return self.Request('post', **params)
+        return self.request('post', **params)
 
-    def createWithdrawal(self, params=None):
-        """Withdraw or masswithdraw(NOT RECOMMENDED) coins to a specified address,
+    def create_withdrawal(self, params=None):
+        """
+        Withdraw or masswithdraw(NOT RECOMMENDED) coins to a specified address,
         optionally set a IPN when complete.
-            https://www.coinpayments.net/apidoc-create-withdrawal
+        https://www.coinpayments.net/apidoc-create-withdrawal
         """
         if params is None:
             params = {}
@@ -156,11 +171,12 @@ class CoinPayments():
                        'key': self.publicKey,
                        'version': self.version,
                        'format': self.format})
-        return self.Request('post', **params)
+        return self.request('post', **params)
 
-    def convertCoins(self, params=None):
-        """Convert your balances from one currency to another
-            https://www.coinpayments.net/apidoc-convert
+    def convert_coins(self, params=None):
+        """
+        Convert your balances from one currency to another
+        https://www.coinpayments.net/apidoc-convert
         """
         if params is None:
             params = {}
@@ -168,11 +184,12 @@ class CoinPayments():
                        'key': self.publicKey,
                        'version': self.version,
                        'format': self.format})
-        return self.Request('post', **params)
+        return self.request('post', **params)
 
-    def getWithdrawalHistory(self, params=None):
-        """Get list of recent withdrawals (1-100max)
-            https://www.coinpayments.net/apidoc-get-withdrawal-history
+    def get_withdrawal_history(self, params=None):
+        """
+        Get list of recent withdrawals (1-100max)
+        https://www.coinpayments.net/apidoc-get-withdrawal-history
         """
         if params is None:
             params = {}
@@ -180,11 +197,12 @@ class CoinPayments():
                        'key': self.publicKey,
                        'version': self.version,
                        'format': self.format})
-        return self.Request('post', **params)
+        return self.request('post', **params)
 
-    def getWithdrawalInfo(self, params=None):
-        """Get information about a specific withdrawal based on withdrawal ID
-            https://www.coinpayments.net/apidoc-get-withdrawal-info
+    def get_withdrawal_info(self, params=None):
+        """
+        Get information about a specific withdrawal based on withdrawal ID
+        https://www.coinpayments.net/apidoc-get-withdrawal-info
         """
         if params is None:
             params = {}
@@ -192,11 +210,12 @@ class CoinPayments():
                        'key': self.publicKey,
                        'version': self.version,
                        'format': self.format})
-        return self.Request('post', **params)
+        return self.request('post', **params)
 
-    def getConversionInfo(self, params=None):
-        """Get information about a specific withdrawal based on withdrawal ID
-            https://www.coinpayments.net/apidoc-get-conversion-info
+    def get_conversion_info(self, params=None):
+        """
+        Get information about a specific withdrawal based on withdrawal ID
+        https://www.coinpayments.net/apidoc-get-conversion-info
         """
         if params is None:
             params = {}
@@ -204,11 +223,12 @@ class CoinPayments():
                        'key': self.publicKey,
                        'version': self.version,
                        'format': self.format})
-        return self.Request('post', **params)
+        return self.request('post', **params)
 
-    def getTxInfoMulti(self, params=None):
-        """ Get tx info (up to 25 ids separated by | )
-            https://www.coinpayments.net/apidoc-get-tx-info
+    def get_tx_info_multi(self, params=None):
+        """
+        Get tx info (up to 25 ids separated by | )
+        https://www.coinpayments.net/apidoc-get-tx-info
         """
         if params is None:
             params = {}
@@ -216,4 +236,4 @@ class CoinPayments():
                        'key': self.publicKey,
                        'version': self.version,
                        'format': self.format})
-        return self.Request('post', **params)
+        return self.request('post', **params)

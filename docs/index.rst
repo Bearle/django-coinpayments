@@ -13,6 +13,7 @@ Contents:
 
    readme
    installation
+   modules
    usage
    contributing
    authors

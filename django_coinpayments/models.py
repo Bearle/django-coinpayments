@@ -7,6 +7,7 @@ import uuid
 from django.utils import timezone
 from .coinpayments import CoinPayments
 from .exceptions import CoinPaymentsProviderError
+from .utils import get_coins_list
 import datetime
 from decimal import Decimal
 
@@ -24,6 +25,39 @@ class CoinPaymentsTransaction(TimeStampedModel):
         return self.id
 
 
+class PaymentManager(models.Manager):
+    def get_late_payments(self):
+        """
+        Returns payments that are already late by timeout, not filtering their status
+        """
+        return self.get_queryset().filter(provider_tx__isnull=False,
+                                          provider_tx__timeout__lte=timezone.now())
+
+    def get_cancelled_payments(self):
+        """
+        Returns payments that are already late and should be timed out
+        """
+        return self.get_late_payments().filter(status__in=[self.model.PAYMENT_STATUS_PENDING])
+
+    def get_timed_out_payments(self):
+        """
+        Returns payments that are timed out
+        """
+        return self.get_late_payments().filter(status__in=[self.model.PAYMENT_STATUS_TIMEOUT])
+
+    def mark_timed_out_payments(self):
+        """
+        Marks late payments as timed out
+        """
+        return self.get_late_payments().update(status=self.model.PAYMENT_STATUS_TIMEOUT)
+
+    def get_successful_payments(self):
+        """
+        Returns successfully paid payments
+        """
+        return self.get_queryset().filter(status__in=[self.model.PAYMENT_STATUS_PAID])
+
+
 class Payment(TimeStampedModel):
     PAYMENT_STATUS_PAID = 'PAID'
     PAYMENT_STATUS_TIMEOUT = 'TOUT'
@@ -38,13 +72,14 @@ class Payment(TimeStampedModel):
         (PAYMENT_STATUS_PAID, 'Paid')
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    currency_original = models.CharField(max_length=8, choices=CURRENCY_CHOICES)
-    currency_paid = models.CharField(max_length=8, choices=CURRENCY_CHOICES)
+    currency_original = models.CharField(max_length=8, choices=get_coins_list())
+    currency_paid = models.CharField(max_length=8, choices=get_coins_list())
     amount = models.DecimalField(max_digits=100, decimal_places=18, verbose_name='Amount')
     amount_paid = models.DecimalField(max_digits=100, decimal_places=18, verbose_name='Amount paid')
     provider_tx = models.OneToOneField(CoinPaymentsTransaction, on_delete=models.CASCADE,
                                        verbose_name='Payment transaction', null=True, blank=True)
     status = models.CharField(max_length=4, choices=PAYMENT_STATUS_CHOICES)
+    objects = PaymentManager()
 
     class Meta:
         verbose_name = 'Payment'
@@ -63,20 +98,30 @@ class Payment(TimeStampedModel):
         if self.provider_tx:
             return self.provider_tx.timeout < timezone.now()
 
-    @classmethod
-    def get_timed_out_payments(cls):
-        return cls.objects.filter(provider_tx__isnull=False, status__in=[cls.PAYMENT_STATUS_PENDING],
-                                  provider_tx__timeout__lte=timezone.now())
-
-    def create_tx(self, buyer_email='', buyer_name='', invoice=None, item_name='', item_number=''):
+    def create_tx(self, invoice=None, **kwargs):
+        """
+        :param invoice: Field for custom use. Default - payment id
+        :param kwargs:
+            address      The address to send the funds to in currency_paid network
+            buyer_email  Optionally (but highly recommended) set the buyer's email address.
+                         This will let us send them a notice if they underpay or need a refund.
+            buyer_name   Optionally set the buyer's name for your reference.
+            item_name    Item name for your reference,
+                         will be on the payment information page and in the IPNs for the transaction.
+            item_number  Item number for your reference,
+                         will be on the payment information page and in the IPNs for the transaction.
+            custom       Field for custom use.
+            ipn_url      URL for your IPN callbacks.
+                         If not set it will use the IPN URL in your Edit Settings page if you have one set.
+        :return: `CoinPaymentsTransaction` instance
+        """
         obj = CoinPayments.get_instance()
         if not invoice:
             invoice = self.id
         params = dict(amount=self.amount_left(), currency1=self.currency_original,
-                      currency2=self.currency_paid, buyer_email=buyer_email,
-                      buyer_name=buyer_name, item_name=item_name, item_number=item_number,
-                      invoice=self.id)
-        result = obj.createTransaction(params)
+                      currency2=self.currency_paid, invoice=invoice)
+        params.update(**kwargs)
+        result = obj.create_transaction(params)
         if result['error'] == 'ok':
             result = result['result']
             timeout = timezone.now() + datetime.timedelta(seconds=result['timeout'])
