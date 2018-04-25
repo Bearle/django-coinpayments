@@ -59,7 +59,7 @@ class PaymentManager(models.Manager):
     def get_pending_payments(self):
         return self.get_queryset() \
             .filter(status__in=[self.model.PAYMENT_STATUS_PENDING]) \
-            .exclude(self.get_late_payments())
+            .exclude(id__in=self.get_late_payments())
 
     def get_successful_payments(self):
         """
