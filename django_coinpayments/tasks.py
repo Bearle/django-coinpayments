@@ -17,7 +17,7 @@ def refresh_tx_info():
     for page in paginator.page_range:
         chunk = paginator.page(page).object_list
         provider_txs_ids = [i.provider_tx.id for i in chunk]
-        res = caller.getTxInfoMulti({'txid': '|'.join(provider_txs_ids)})
+        res = caller.get_tx_info_multi({'txid': '|'.join(provider_txs_ids)})
         if res['error'] == 'ok':
             results = res['result']
             for k, v in results.items():
