@@ -14,7 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 
 
 class CoinPaymentsTransaction(TimeStampedModel):
-    id = models.CharField(max_length=100, verbose_name=_('id'), primary_key=True, editable=False)
+    id = models.CharField(max_length=100, verbose_name=_('id'), primary_key=True, editable=True)
     address = models.CharField(max_length=150, verbose_name=_('Address'))
     amount = models.DecimalField(max_digits=100, decimal_places=18, verbose_name=_('Amount'))
     confirms_needed = models.PositiveSmallIntegerField(verbose_name=_('Confirms needed'))

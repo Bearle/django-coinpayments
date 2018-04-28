@@ -2,6 +2,11 @@
 
 History
 -------
+0.1.2 (2018-04-26)
+++++++++++++++++++
+
+* Made 'id' field on CoinPaymentsTransaction editable
+
 0.1.1 (2018-04-26)
 ++++++++++++++++++
 
