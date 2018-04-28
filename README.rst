@@ -68,6 +68,9 @@ You have to provide API keys with `create_transaction`, `get_tx_info` permission
     COINPAYMENTS_API_KEY = 'aaaaa'
     COINPAYMENTS_API_SECRET = 'aaa'
 
+Have a look at the `example project <https://github.com/Bearle/django-coinpayments/blob/master/example/example/views.py>`_ to see usage examples.
+As for now, the example project views cover creating new transactions, viewing payments and coinpayments transactions,
+creating new payments using modelforms and creating new coinpayments transactions instead of the old one's (if the payment was filled partially)
 
 Running Tests
 -------------
