@@ -16,7 +16,7 @@ from django.utils.translation import ugettext_lazy as _
 class CoinPaymentsTransaction(TimeStampedModel):
     id = models.CharField(max_length=100, verbose_name=_('id'), primary_key=True, editable=True)
     address = models.CharField(max_length=150, verbose_name=_('Address'))
-    amount = models.DecimalField(max_digits=100, decimal_places=18, verbose_name=_('Amount'))
+    amount = models.DecimalField(max_digits=65, decimal_places=18, verbose_name=_('Amount'))
     confirms_needed = models.PositiveSmallIntegerField(verbose_name=_('Confirms needed'))
     qrcode_url = models.URLField(verbose_name=_('QR Code Url'))
     status_url = models.URLField(verbose_name=_('Status Url'))
@@ -84,8 +84,8 @@ class Payment(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     currency_original = models.CharField(max_length=8, choices=get_coins_list(), verbose_name=_('Original currency'))
     currency_paid = models.CharField(max_length=8, choices=get_coins_list(), verbose_name=_('Payment currency'))
-    amount = models.DecimalField(max_digits=100, decimal_places=18, verbose_name=_('Amount'))
-    amount_paid = models.DecimalField(max_digits=100, decimal_places=18, verbose_name=_('Amount paid'))
+    amount = models.DecimalField(max_digits=65, decimal_places=18, verbose_name=_('Amount'))
+    amount_paid = models.DecimalField(max_digits=65, decimal_places=18, verbose_name=_('Amount paid'))
     provider_tx = models.OneToOneField(CoinPaymentsTransaction, on_delete=models.CASCADE,
                                        verbose_name=_('Payment transaction'), null=True, blank=True)
     status = models.CharField(max_length=4, choices=PAYMENT_STATUS_CHOICES)
