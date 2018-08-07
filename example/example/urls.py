@@ -24,5 +24,4 @@ urlpatterns = [
     url(r'^payments/$', PaymentList.as_view(), name='payment_list'),
     url(r'^payment/(?P<pk>[0-9a-f-]+)$', PaymentDetail.as_view(), name='payment_detail'),
     url(r'^payment/new/(?P<pk>[0-9a-f-]+)$', create_new_payment, name='payment_new'),
-
 ]

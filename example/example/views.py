@@ -36,11 +36,11 @@ class PaymentSetupView(FormView):
 
     def form_valid(self, form):
         cl = form.cleaned_data
-        payment = Payment.objects.create(currency_original=cl['currency_original'],
-                                         currency_paid=cl['currency_paid'],
-                                         amount=cl['amount'],
-                                         amount_paid=Decimal(0),
-                                         status=Payment.PAYMENT_STATUS_PROVIDER_PENDING)
+        payment = Payment(currency_original=cl['currency_original'],
+                          currency_paid=cl['currency_paid'],
+                          amount=cl['amount'],
+                          amount_paid=Decimal(0),
+                          status=Payment.PAYMENT_STATUS_PROVIDER_PENDING)
         return create_tx(self.request, payment)
 
 

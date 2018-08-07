@@ -8,6 +8,7 @@ from decimal import Decimal
 
 logger = get_task_logger(__name__)
 
+
 @shared_task
 def refresh_tx_info():
     caller = CoinPayments.get_instance()
@@ -23,13 +24,15 @@ def refresh_tx_info():
             for k, v in results.items():
                 temp = CoinPaymentsTransaction.objects.filter(id=k).first()
                 if not temp:
-                    logger.error('CoinPaymentsTransaction with id %s received from API but not found in DB'.format(str(k)))
+                    logger.error(
+                        'CoinPaymentsTransaction with id %s received from API but not found in DB'.format(str(k)))
                 else:
                     payment = temp.payment
                     # Payments statuses: https://www.coinpayments.net/merchant-tools-ipn
                     # Safe statuses: 2 and >= 100
                     if v['status'] == 2 or v['status'] >= 100:
-                        logger.info(f'Received payment for transaction {k} - payment {payment.id} ({payment.amount})')
+                        logger.info('Received payment for transaction {} - payment {} ({})'
+                                    .format(str(k), str(payment.id), str(payment.amount)))
                         payment.amount_paid = payment.amount
                     else:
                         payment.amount_paid = Decimal(v['receivedf'])
