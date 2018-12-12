@@ -119,9 +119,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 COINPAYMENTS_ADMIN_ENABLED = True
 # Insert your API keys here
-# COINPAYMENTS_API_KEY = ''
-# COINPAYMENTS_API_SECRET = ''
-
+COINPAYMENTS_API_KEY = 'de64d14a97ca1c5fb30f934eebd4c2adc7bbd3e776406106787df1a67066344b'
+COINPAYMENTS_API_SECRET = '53a838Da6f721d887f3f49aE51C190Ce0C859F24b0f93FE4D6aC078aEb09f3a2'
+COINPAYMENTS_IPN_SECRET = 'vcj8S5yn73c8dLHqct6Z2NVcTH5mB5'
+COINPAYMENTS_MERCHANT_ID = '8d683f17575a9544c6180206f52d4a9c'
 # has EOS - overrides choices for 'currency_original' and 'currency_paid' in Payment model
 COINPAYMENTS_ACCEPTED_COINS = (
 ('BCH', 'Bitcoin Cash'), ('BLK', 'BlackCoin'), ('BTC', 'Bitcoin'), ('DASH', 'Dash'), ('DCR', 'Decred'),
