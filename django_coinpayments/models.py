@@ -86,6 +86,7 @@ class Payment(TimeStampedModel):
     currency_paid = models.CharField(max_length=8, choices=get_coins_list(), verbose_name=_('Payment currency'))
     amount = models.DecimalField(max_digits=65, decimal_places=18, verbose_name=_('Amount'))
     amount_paid = models.DecimalField(max_digits=65, decimal_places=18, verbose_name=_('Amount paid'))
+    buyer_email = models.EmailField(max_length=254, null=True, blank=True, verbose_name=_('Buyer email'))
     provider_tx = models.OneToOneField(CoinPaymentsTransaction, on_delete=models.CASCADE,
                                        verbose_name=_('Payment transaction'), null=True, blank=True)
     status = models.CharField(max_length=4, choices=PAYMENT_STATUS_CHOICES)
@@ -129,7 +130,7 @@ class Payment(TimeStampedModel):
         if not invoice:
             invoice = self.id
         params = dict(amount=self.amount_left(), currency1=self.currency_original,
-                      currency2=self.currency_paid, invoice=invoice)
+                      currency2=self.currency_paid, buyer_email=self.buyer_email, invoice=invoice)
         params.update(**kwargs)
         result = obj.create_transaction(params)
         if result['error'] == 'ok':
