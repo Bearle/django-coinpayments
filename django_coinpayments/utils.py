@@ -1,8 +1,7 @@
 from django.conf import settings
 
 import hmac
-import hashlib
-from django.utils.http import urlencode
+from hashlib import sha512
 
 BCH = "BCH"
 BLK = "BLK"
@@ -66,7 +65,15 @@ def get_coins_list():
 
 
 def create_ipn_hmac(request):
-    ipn_secret = getattr(settings, 'COINPAYMENTS_IPN_SECRET', None)
-    encoded = urlencode(request).encode('utf-8')
-    hash = hmac.new(bytearray(ipn_secret, 'utf-8'), encoded, hashlib.sha512).hexdigest()
-    return hash
+    # secret = 'you sould set your API secret in here and then uncomment this line'
+
+    # for example:
+    # secret = 'mysecret'
+    secret = 'default'
+    encoded = request[2:-1]
+    computed_sig = hmac.new(
+        bytearray(secret, 'utf-8'),
+        msg=bytearray(encoded, 'utf-8'), digestmod=sha512
+    ).hexdigest()
+    print(computed_sig)
+    return computed_sig
